@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Ainthinai.Service.Models;
 using Ainthinai.Service.Model;
 using Ainthinai.Service.EnumObjects;
+using Ainthinai.Service.DomainRepository;
 
 namespace Ainthinai.Service
 {
@@ -32,6 +33,8 @@ namespace Ainthinai.Service
             //services.AddDbContext<DataContext>(options =>
             //        options.UseSqlServer(Configuration.GetConnectionString("DataContext")));
             services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("Ainthinai"));
+            services.AddTransient<IEventRepository, EventRepository>();
+            services.AddTransient<ITaskListRepository, TaskListRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

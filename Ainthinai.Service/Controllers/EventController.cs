@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Ainthinai.Service.Model;
 using Ainthinai.Service.Models;
 using Microsoft.Extensions.Logging;
+using Ainthinai.Service.DomainRepository;
 
 namespace Ainthinai.Service.Controllers
 {
@@ -15,114 +16,139 @@ namespace Ainthinai.Service.Controllers
     [Route("api/Events")]
     public class EventController : Controller
     {
-        private readonly DataContext _context;
         private readonly ILogger<EventController> _logger;
-        public EventController(DataContext context, ILoggerFactory loggerFactory)
+        private readonly IEventRepository _eventRepository;
+
+        public EventController(IEventRepository eventRepository, ILoggerFactory loggerFactory)
         {
-            _context = context;
             _logger = loggerFactory.CreateLogger<EventController>();
+            _eventRepository = eventRepository;
         }
 
         // GET: api/Events
         [HttpGet]
-        public IEnumerable<Event> GetEvent()
+        public async Task<IEnumerable<Event>> GetEvent()
         {
-            return _context.Event;
+            try
+            {
+                _logger.LogInformation("EventController: GetEvents() method is being invoked");
+                var response = await _eventRepository.GetEvents();
+                _logger.LogInformation("EventController: GetEvents() method Successfully invoked");
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("EventController: Error Processing GetEvent() method. Exception : {0}", ex.Message);
+                return null;
+            }
         }
 
         // GET: api/Events/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEvent([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                _logger.LogInformation("EventController: GetEvent() by ID is being invoked");
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("EventController: Invalid request is passed");
+                    return BadRequest(ModelState);
+                }
+
+                var @event = await _eventRepository.GetEvent(id);
+
+                if (@event == null)
+                {
+                    _logger.LogInformation("EventController: Event ID doesn't exist in the records");
+                    return NotFound();
+                }
+                _logger.LogInformation("EventController: GetEvent() by ID is successfully invoked");
+
+                return Ok(@event);
             }
-
-            var @event = await _context.Event.SingleOrDefaultAsync(m => m.Id == id);
-
-            if (@event == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError("EventController: Error Processing GetEvent() by ID method. Exception : {0}", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
-            return Ok(@event);
         }
 
         // PUT: api/Events/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEvent([FromRoute] int id, [FromBody] Event @event)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != @event.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(@event).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EventExists(id))
+                _logger.LogInformation("EventController: PutEvent() by ID is being invoked");
+                if (!ModelState.IsValid)
                 {
-                    return NotFound();
+                    _logger.LogWarning("EventController: Invalid request is passed");
+                    return BadRequest(ModelState);
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                if (id != @event.Id)
+                {
+                    _logger.LogWarning("EventController: EventID is not correct");
+                    return BadRequest();
+                }
+
+                var result = await _eventRepository.UpdateEvent(id, @event);
+                _logger.LogInformation("EventController: PutEvent() by ID is successfully invoked");
+                return result == true ? Ok(@event) : Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("EventController: Erro processing PutEvent() method. Exception: {0}", ex.Message);
+                return null;
+            }
         }
 
         // POST: api/Events
         [HttpPost]
         public async Task<IActionResult> PostEvent([FromBody] Event @event)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                _logger.LogInformation("EventController.PostEvent(): Method is being invoked");
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("EventController.PostEvent(): Invalid request is passed.");
+                    return BadRequest(ModelState);
+                }
+                @event = await _eventRepository.CreateEvent(@event);
+                _logger.LogInformation("EventController.PostEvent(): Method is successfully invoked");
+                return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
             }
-
-            _context.Event.Add(@event);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
+            catch (Exception ex)
+            {
+                _logger.LogError("EventController.PostEvent(): Error processing the method. Exception: {0}", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         // DELETE: api/Events/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                _logger.LogInformation("EventController.DeleteEvent(): Method is being invoked");
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("EventController.DeleteEvent(): Invalid request is passed.");
+                    return BadRequest(ModelState);
+                }
 
-            var @event = await _context.Event.SingleOrDefaultAsync(m => m.Id == id);
-            if (@event == null)
+                var @event = await _eventRepository.DeleteEvent(id);
+                _logger.LogInformation("EventController.DeleteEvent(): Method is successfully invoked");
+                return Ok(@event);
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError("EventController.DeleteEvent(): Error processing the method. Exception: {0}", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
-            _context.Event.Remove(@event);
-            await _context.SaveChangesAsync();
-
-            return Ok(@event);
-        }
-
-        private bool EventExists(int id)
-        {
-            return _context.Event.Any(e => e.Id == id);
         }
     }
 }

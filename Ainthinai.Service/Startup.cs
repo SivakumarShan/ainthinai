@@ -9,10 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using Ainthinai.Service.Models;
 using Ainthinai.Service.Model;
 using Ainthinai.Service.EnumObjects;
 using Ainthinai.Service.DomainRepository;
+using Ainthinai.Service.Repository;
+using Ainthinai.Service.DependencyInjection;
 
 namespace Ainthinai.Service
 {
@@ -32,9 +33,12 @@ namespace Ainthinai.Service
 
             //services.AddDbContext<DataContext>(options =>
             //        options.UseSqlServer(Configuration.GetConnectionString("DataContext")));
-            services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("Ainthinai"));
-            services.AddTransient<IEventRepository, EventRepository>();
-            services.AddTransient<ITaskListRepository, TaskListRepository>();
+            services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("Ainthinai")).AddRepository<DataContext>();
+            services.AddSingleton(typeof(IEventRepository<>), typeof(EventRepository<>));
+            services.AddTransient(typeof(ITaskListRepository), typeof(TaskListRepository));
+            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

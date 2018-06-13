@@ -16,29 +16,43 @@ namespace Ainthinai.Service.Repository
             _dbContext = context ?? throw new ArgumentException(nameof(context));
             _dbSet = _dbContext.Set<T>();
         }
-        public void Add(T entity)
+        public async Task Add(T entity)
         {
-            throw new NotImplementedException();
+            await _dbContext.AddAsync<T>(entity);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void Delete(T entity)
+        public async Task Delete(T entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Remove<T>(entity);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public IEnumerable<T> Get()
+        public async Task<IEnumerable<T>> Get()
         {
-            throw new NotImplementedException();
+            return  _dbSet.AsEnumerable<T>();
         }
 
-        public IEnumerable<T> Get(Expression<Func<T, bool>> predicate)
+        public async Task<T> Get(object id)
         {
-            throw new NotImplementedException();
+            return await _dbSet.FindAsync(id);
         }
 
-        public void Update(T entity)
+        public async Task<IEnumerable<T>> Get(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return _dbSet.Where<T>(predicate).AsEnumerable();
+        }
+
+        public async Task Update(T entity)
+        {
+            var records = _dbSet.AsNoTracking().Where(o => o == entity);
+            if (records != null)
+            {
+                _dbSet.Update(entity);
+                //_dbContext.Entry<T>(entity).State = EntityState.Modified;
+                //_dbContext.Attach<T>(entity);
+                await _dbContext.SaveChangesAsync();
+            }
         }
     }
 }

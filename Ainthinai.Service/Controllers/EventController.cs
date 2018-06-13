@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Ainthinai.Service.Model;
-using Ainthinai.Service.Models;
 using Microsoft.Extensions.Logging;
 using Ainthinai.Service.DomainRepository;
 

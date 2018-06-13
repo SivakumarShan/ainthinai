@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Ainthinai.Service.Model;
 
-namespace Ainthinai.Service.Models
+namespace Ainthinai.Service
 {
     public class DataContext : DbContext
     {
@@ -16,5 +16,6 @@ namespace Ainthinai.Service.Models
 
         public DbSet<Event> Event { get; set; }
         public DbSet<TaskList> TaskList { get; set; }
+        //public DbSet<Feedback> Feedbacks { get; set; }
     }
 }

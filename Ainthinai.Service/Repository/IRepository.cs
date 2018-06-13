@@ -8,10 +8,11 @@ namespace Ainthinai.Service.Repository
 {
     public interface IRepository<T> where T : class
     {
-        IEnumerable<T> Get();
-        IEnumerable<T> Get(Expression<Func<T, bool>> predicate);
-        void Add(T entity);
-        void Delete(T entity);
-        void Update(T entity);
+        Task<IEnumerable<T>> Get();
+        Task<T> Get(object id);
+        Task<IEnumerable<T>> Get(Expression<Func<T, bool>> predicate);
+        Task Add(T entity);
+        Task Delete(T entity);
+        Task Update(T entity);
     }
 }

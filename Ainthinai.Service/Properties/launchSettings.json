@@ -19,7 +19,7 @@
     "Ainthinai.Service": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "api/Events",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

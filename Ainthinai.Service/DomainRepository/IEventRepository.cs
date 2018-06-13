@@ -1,4 +1,5 @@
 ﻿using Ainthinai.Service.Model;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,10 @@ namespace Ainthinai.Service.DomainRepository
         Task<Event> CreateEvent(Event @event);
         Task<bool> UpdateEvent(int eventId, Event @event);
         Task<bool> DeleteEvent(int eventId);
+    }
+
+    public interface IEventRepository<TContext> : IEventRepository where TContext : DbContext
+    {
+        TContext Context { get; }
     }
 }

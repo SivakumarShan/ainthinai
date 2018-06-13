@@ -3,75 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ainthinai.Service.Model;
-using Ainthinai.Service.Models;
 using Ainthinai.Service.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ainthinai.Service.DomainRepository
 {
-    public class EventRepository : IEventRepository
+    public class EventRepository<TContext> : IEventRepository<TContext>, IEventRepository where TContext : DbContext
     {
         private readonly IRepository<Event> _eventRepo;
-        private readonly DataContext _dataContext;
 
-        public EventRepository(DataContext context, IRepository<Event> eventRepo)
+        public EventRepository(TContext context)
         {
-            _eventRepo = eventRepo;
-            _dataContext = context;
+            Context = context;
+            _eventRepo = new Repository<Event>(Context);
         }
+
+        public TContext Context { get; }
 
         public async Task<Event> CreateEvent(Event @event)
         {
-            var result = await _dataContext.Event.AddAsync(@event);
-            await _dataContext.SaveChangesAsync();
-            return result.Entity;
+            await _eventRepo.Add(@event);
+            return await Task.FromResult<Event>(@event);
         }
 
         public async Task<bool> DeleteEvent(int eventId)
         {
-            var @event = await _dataContext.Event.SingleOrDefaultAsync(m => m.Id == eventId);
-            if (@event == null)
-                return false;
-            _dataContext.Event.Remove(@event);
-            await _dataContext.SaveChangesAsync();
-            return true;
+            var existingData = Context.Find<Event>(eventId);
+            if (existingData != null)
+            {
+                await _eventRepo.Delete(existingData);
+                return true;
+            }
+            return false;
         }
 
         public async Task<Event> GetEvent(int eventId)
         {
-            return await _dataContext.Event.SingleOrDefaultAsync(m => m.Id == eventId);
+            return await _eventRepo.Get(eventId);
         }
 
         public async Task<IEnumerable<Event>> GetEvents()
         {
-            return await _dataContext.Event.ToListAsync();
+            return await _eventRepo.Get();
         }
 
         public async Task<bool> UpdateEvent(int eventId, Event @event)
         {
-             _dataContext.Entry(@event).State = EntityState.Modified;
-
-            try
+            if (eventId == @event.Id)
             {
-                await _dataContext.SaveChangesAsync();
+                @event.Id = eventId;
+                await _eventRepo.Update(@event);
                 return true;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EventExists(eventId))
-                {
-                    return false;
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
-
-        private bool EventExists(int id)
-        {
-            return _dataContext.Event.Any(e => e.Id == id);
+            return false;
         }
     }
 }

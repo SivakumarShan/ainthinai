@@ -1,4 +1,5 @@
 ﻿using Ainthinai.Service.Model;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +7,17 @@ using System.Threading.Tasks;
 
 namespace Ainthinai.Service.DomainRepository
 {
-    interface ITaskListRepository
+    public interface ITaskListRepository
     {
-        IEnumerable<TaskList> GetEvents();
-        TaskList GetEvent(int taskId);
-        TaskList CreateEvent(TaskList task);
-        bool UpdateEvent(int taskId, TaskList task);
-        bool DeleteEvent(int taskId);
+        Task<IEnumerable<TaskList>> GetTasks();
+        Task<TaskList> GetTask(int taskId);
+        Task<TaskList> CreateTask(TaskList task);
+        Task<bool> UpdateTask(int taskId, TaskList task);
+        Task<bool> DeleteTask(int taskId);
+    }
+
+    public interface ITaskListRepository<TContext> : ITaskListRepository where TContext : DbContext
+    {
+        TContext Context { get; }
     }
 }

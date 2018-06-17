@@ -25,6 +25,12 @@ namespace Ainthinai.Service.DependencyInjection
         {
             services.AddScoped<IEventRepository, EventRepository<TContext>>();
             services.AddScoped<IEventRepository<TContext>, EventRepository<TContext>>();
+
+            services.AddScoped<ITaskListRepository, TaskListRepository<TContext>>();
+            services.AddScoped<ITaskListRepository<TContext>, TaskListRepository<TContext>>();
+
+            services.AddScoped<IFeedbackRepository, FeedbackRepository<TContext>>();
+            services.AddScoped<IFeedbackRepository<TContext>, FeedbackRepository<TContext>>();
             return services;
 
         }

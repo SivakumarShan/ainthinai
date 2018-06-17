@@ -16,6 +16,6 @@ namespace Ainthinai.Service
 
         public DbSet<Event> Event { get; set; }
         public DbSet<TaskList> TaskList { get; set; }
-        //public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
     }
 }

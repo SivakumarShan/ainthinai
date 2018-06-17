@@ -1,42 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Ainthinai.Service.Model;
+using System.Threading.Tasks;
 using Ainthinai.Service.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ainthinai.Service.DomainRepository
 {
-    public class TaskListRepository : ITaskListRepository
+    public class TaskListRepository<TContext> : ITaskListRepository<TContext>, ITaskListRepository where TContext : DbContext
     {
         private readonly IRepository<TaskList> _taskRepo;
-        public TaskListRepository(IRepository<TaskList> repo)
+
+        public TaskListRepository(TContext context)
         {
-            _taskRepo = repo;
-        }
-        public TaskList CreateEvent(TaskList task)
-        {
-            throw new NotImplementedException();
+            Context = context;
+            _taskRepo = new Repository<TaskList>(Context);
         }
 
-        public bool DeleteEvent(int taskId)
+        public TContext Context { get; }
+
+        public async Task<TaskList> CreateTask(TaskList task)
         {
-            throw new NotImplementedException();
+            await _taskRepo.Add(task);
+            return task;
         }
 
-        public TaskList GetEvent(int taskId)
+        public async Task<bool> DeleteTask(int taskId)
         {
-            throw new NotImplementedException();
+            var existingTask = Context.Find<TaskList>(taskId);
+            if (existingTask != null)
+            {
+                await _taskRepo.Delete(existingTask);
+                return true;
+            }
+            return false;
         }
 
-        public IEnumerable<TaskList> GetEvents()
+        public async Task<TaskList> GetTask(int taskId)
         {
-            throw new NotImplementedException();
+            return await _taskRepo.Get(taskId);
         }
 
-        public bool UpdateEvent(int taskId, TaskList task)
+        public async Task<IEnumerable<TaskList>> GetTasks()
         {
-            throw new NotImplementedException();
+            return await _taskRepo.Get();
+        }
+
+        public async Task<bool> UpdateTask(int taskId, TaskList task)
+        {
+            if (taskId == task.Id)
+            {
+                await _taskRepo.Update(task);
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ainthinai.Service.Model;
 using Microsoft.Extensions.Logging;
 using Ainthinai.Service.DomainRepository;
+using AutoMapper;
 
 namespace Ainthinai.Service.Controllers
 {
@@ -25,14 +26,19 @@ namespace Ainthinai.Service.Controllers
 
         // GET: api/Events
         [HttpGet]
-        public async Task<IEnumerable<Event>> GetEvent()
+        public async Task<IEnumerable<ViewModel.Event>> GetEvent()
         {
             try
             {
                 _logger.LogInformation("EventController: GetEvents() method is being invoked");
                 var response = await _eventRepository.GetEvents();
+
+                var config = new MapperConfiguration(cfg => { cfg.CreateMap<Model.Event, ViewModel.Event>(); });
+                var mapper = config.CreateMapper();
+                var output = mapper.Map<IEnumerable<Model.Event>, IEnumerable<ViewModel.Event>>(response);
+
                 _logger.LogInformation("EventController: GetEvents() method Successfully invoked");
-                return response;
+                return output;
             }
             catch (Exception ex)
             {
@@ -55,15 +61,18 @@ namespace Ainthinai.Service.Controllers
                 }
 
                 var @event = await _eventRepository.GetEvent(id);
+                var config = new MapperConfiguration(cfg => { cfg.CreateMap<Model.Event, ViewModel.Event>(); });
+                var mapper = config.CreateMapper();
+                var viewModelEvent = mapper.Map<Model.Event, ViewModel.Event>(@event);
 
-                if (@event == null)
+                if (viewModelEvent == null)
                 {
                     _logger.LogInformation("EventController: Event ID doesn't exist in the records");
                     return NotFound();
                 }
                 _logger.LogInformation("EventController: GetEvent() by ID is successfully invoked");
 
-                return Ok(@event);
+                return Ok(viewModelEvent);
             }
             catch (Exception ex)
             {
@@ -74,7 +83,7 @@ namespace Ainthinai.Service.Controllers
 
         // PUT: api/Events/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEvent([FromRoute] int id, [FromBody] Event @event)
+        public async Task<IActionResult> PutEvent([FromRoute] int id, [FromBody] ViewModel.Event @event)
         {
             try
             {
@@ -91,7 +100,11 @@ namespace Ainthinai.Service.Controllers
                     return BadRequest();
                 }
 
-                var result = await _eventRepository.UpdateEvent(id, @event);
+                var config = new MapperConfiguration(cfg => { cfg.CreateMap<ViewModel.Event, Model.Event>(); });
+                var mapper = config.CreateMapper();
+                var modelEvent = mapper.Map<ViewModel.Event, Event>(@event);
+
+                var result = await _eventRepository.UpdateEvent(id, modelEvent);
                 _logger.LogInformation("EventController: PutEvent() by ID is successfully invoked");
                 return result == true ? Ok(@event) : Ok(result);
             }
@@ -104,7 +117,7 @@ namespace Ainthinai.Service.Controllers
 
         // POST: api/Events
         [HttpPost]
-        public async Task<IActionResult> PostEvent([FromBody] Event @event)
+        public async Task<IActionResult> PostEvent([FromBody] ViewModel.Event @event)
         {
             try
             {
@@ -114,7 +127,12 @@ namespace Ainthinai.Service.Controllers
                     _logger.LogWarning("EventController.PostEvent(): Invalid request is passed.");
                     return BadRequest(ModelState);
                 }
-                @event = await _eventRepository.CreateEvent(@event);
+
+                var config = new MapperConfiguration(cfg => { cfg.CreateMap<ViewModel.Event, Model.Event>(); });
+                var mapper = config.CreateMapper();
+                var modelEvent = mapper.Map<ViewModel.Event, Event>(@event);
+
+                var response = await _eventRepository.CreateEvent(modelEvent);
                 _logger.LogInformation("EventController.PostEvent(): Method is successfully invoked");
                 return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
             }
@@ -148,5 +166,6 @@ namespace Ainthinai.Service.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+
     }
 }

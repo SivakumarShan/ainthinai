@@ -51,6 +51,9 @@ namespace Ainthinai.Service.DomainRepository
         {
             if (taskId == task.Id)
             {
+                Context.Entry<TaskList>(task).Property(x => x.CreatedOn).IsModified = false;
+                Context.Entry<TaskList>(task).Property(x => x.CreatedBy).IsModified = false;
+                Context.Entry<TaskList>(task).Property(x => x.Id).IsModified = false;
                 await _taskRepo.Update(task);
                 return true;
             }

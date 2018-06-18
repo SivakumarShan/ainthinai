@@ -51,6 +51,8 @@ namespace Ainthinai.Service.DomainRepository
         {
             if (eventId == @event.Id)
             {
+                Context.Entry<Event>(@event).Property(x => x.CreatedOn).IsModified = false;
+                Context.Entry<Event>(@event).Property(x => x.CreatedBy).IsModified = false;
                 @event.Id = eventId;
                 await _eventRepo.Update(@event);
                 return true;

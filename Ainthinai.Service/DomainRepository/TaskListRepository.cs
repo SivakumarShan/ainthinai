@@ -5,6 +5,7 @@ using Ainthinai.Service.Model;
 using System.Threading.Tasks;
 using Ainthinai.Service.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Ainthinai.Service.DomainRepository
 {
@@ -45,6 +46,23 @@ namespace Ainthinai.Service.DomainRepository
         public async Task<IEnumerable<TaskList>> GetTasks()
         {
             return await _taskRepo.Get();
+        }
+
+        public async Task<IEnumerable<TaskList>> GetTasks(ViewModel.TaskSearch searchParams)
+        {
+            Expression<Func<TaskList, bool>> where = c => c.EventType == searchParams.EventType;
+            if (searchParams != null)
+            {
+                where = c => c.TaskStatus == searchParams.TaskStatus;
+
+                if (searchParams.EventType != EnumObjects.EventType.All)
+                    where = c => c.EventType == searchParams.EventType;
+                if (!string.IsNullOrEmpty(searchParams.TaskName))
+                    where = c => c.TaskName == searchParams.TaskName;
+                if (!string.IsNullOrEmpty(searchParams.CreatedBy))
+                    where = c => c.CreatedBy == searchParams.CreatedBy;
+            }
+            return await _taskRepo.Get(where);
         }
 
         public async Task<bool> UpdateTask(int taskId, TaskList task)

@@ -11,6 +11,7 @@ namespace Ainthinai.Service.EnumObjects
 
     public enum EventType
     {
+        All,
         Plantation,
         Maintenance,
         Nursery,

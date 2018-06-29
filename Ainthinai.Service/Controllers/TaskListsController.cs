@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Ainthinai.Service.ViewModel;
 using Ainthinai.Service.DomainRepository;
 using Microsoft.Extensions.Logging;
+using Ainthinai.Service.EnumObjects;
 
 namespace Ainthinai.Service.Controllers
 {
@@ -77,6 +78,37 @@ namespace Ainthinai.Service.Controllers
             }
         }
 
+        // GET: api/TaskLists
+        [HttpGet]
+        [ActionName("GetTaskListSearch")]
+        public async Task<IActionResult> GetTaskList([FromBody]TaskSearch searchParams)
+        {
+            _logger.LogInformation("TaskController: GetTaskListSearch() method is being invoked");
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("TaskController: GetTaskListSearch() - Invalid input parameters are passed.");
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var responseTask = await _taskRepo.GetTasks(searchParams);
+                if (responseTask == null)
+                {
+                    _logger.LogWarning("TaskController: GetTaskListSearch() - No task is found with the given input value.");
+                    return NotFound();
+                }
+                _logger.LogInformation("TaskController: GetTaskListSearch() method is successfully invoked");
+                var config = new MapperConfiguration(cfg => { cfg.CreateMap<Model.TaskList, TaskList>(); });
+                var mapper = config.CreateMapper();
+                var vmTaskList = mapper.Map<IEnumerable<Model.TaskList>, IEnumerable<TaskList>>(responseTask);
+                return Ok(vmTaskList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("TaskController: Error Processing PutTaskList() method. Exception : {0}", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
         // PUT: api/TaskLists/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTaskList([FromRoute] int id, [FromBody] ViewModel.TaskList taskList)

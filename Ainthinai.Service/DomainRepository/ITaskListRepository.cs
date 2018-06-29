@@ -11,6 +11,7 @@ namespace Ainthinai.Service.DomainRepository
     {
         Task<IEnumerable<TaskList>> GetTasks();
         Task<TaskList> GetTask(int taskId);
+        Task<IEnumerable<TaskList>> GetTasks(ViewModel.TaskSearch searchParams);
         Task<TaskList> CreateTask(TaskList task);
         Task<bool> UpdateTask(int taskId, TaskList task);
         Task<bool> DeleteTask(int taskId);

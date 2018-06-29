@@ -15,4 +15,12 @@ namespace Ainthinai.Service.ViewModel
         public EnumObjects.TaskStatus TaskStatus { get; set; }
         public string Remarks { get; set; }
     }
+
+    public class TaskSearch
+    {
+        public string TaskName { get; set; }
+        public EventType EventType { get; set; }
+        public EnumObjects.TaskStatus TaskStatus { get; set; }
+        public string CreatedBy { get; set; }
+    }
 }
